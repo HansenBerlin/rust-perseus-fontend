@@ -4,13 +4,11 @@ use models::repository;
 use crate::models;
 use crate::models::repository::{PostRepository, Repository, ResponseInfo, ResponseInfoRx};
 use reqwest;
-use crate::global_state::*;
 
 
 
 fn index_page<G: Html>(cx: Scope) -> View<G> {
-    let AppStateRx { repos } = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-    let ResponseInfoRx { status, time, result } = repos;
+
     view! { cx,
         div {
             header(style = "position: fixed; width: 100%;")
@@ -54,10 +52,7 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
                     }
                     div(class = "hero-buttons"){
 
-                        button(class = "button-cst", on:click = |_| {
-                        #[cfg(client)]
-                        repos.login().await
-                    }) { "GET" }
+
                     }
                 }
                 div(class = "features"){

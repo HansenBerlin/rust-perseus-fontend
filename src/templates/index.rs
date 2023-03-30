@@ -79,43 +79,6 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
 
 
 #[engine_only_fn]
-async fn get_build_state(
-    _info: StateGeneratorInfo<()>,
-) -> Result<IndexPageState, BlamedError<reqwest::Error>> {
-
-    let body = perseus::utils::cache_fallible_res(
-        "ipify",
-        || async {
-            let client = reqwest::Client::new();
-            let res = client
-                .get("http://localhost:8088/repositories")
-                .header(CONTENT_TYPE, "application/json")
-                .header(ACCEPT, "application/json")
-                .send()
-                .await
-                .expect("error");
-
-            let val = match res.json().await {
-                Ok(json) => {
-                    let body: Value = json;
-                    body
-                },
-                Err(e) => panic!("error")
-            };
-            let mut test: Vec<ResponseInfo> = serde_json::from_value(val).unwrap();
-            Ok::<ResponseInfo, reqwest::Error>(test[0].clone())
-        },
-        true,
-    )
-        .await?;
-
-
-    Ok(IndexPageState {
-        response: body,
-    })
-}
-
-#[engine_only_fn]
 fn head(cx: Scope) -> View<SsrNode> {
     view! { cx,
         title { "Welcome to Perseus!" }

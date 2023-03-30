@@ -106,7 +106,16 @@ pub fn get_template<G: Html>() -> Template<G> {
     Template::build("index")
         .build_state_fn(get_build_state)
         .view_with_state(index_page)
+        .head(head)
         .build()
+}
+
+
+#[engine_only_fn]
+fn head(cx: Scope) -> View<SsrNode> {
+    view! { cx,
+        title { "Welcome to Perseus!" }
+    }
 }
 
 #[engine_only_fn]

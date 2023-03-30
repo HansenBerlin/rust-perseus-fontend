@@ -1,5 +1,10 @@
 use perseus::prelude::*;
 use sycamore::prelude::*;
+use models::repository;
+use crate::models;
+use crate::models::repository::{PostRepository, Repository, ResponseInfo};
+use sycamore::suspense::Suspense;
+use reqwasm::http::Request;
 
 fn index_page<G: Html>(cx: Scope) -> View<G> {
     view! { cx,
@@ -50,7 +55,7 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
                     }
                 }
                 div(class = "features"){
-                    (create_feature_card(cx, 100))
+
                 }
             }
             footer{
@@ -70,17 +75,29 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
     }
 }
 
-fn create_feature_card<G: Html>(cx: Scope, count:usize) -> View<G> {
-    let mut all = Vec::with_capacity(count);
-    for id in 0..count {
+const API_BASE_URL: &str = "http://localhost:8081/key/repositories";
+
+async fn fetch_repos() -> Result<Vec<Repository>, reqwasm::Error> {
+    let resp = reqwasm::http::Request::get(API_BASE_URL)
+        .send()
+        .await
+        .unwrap();
+
+    //let resp = Request::get(API_BASE_URL).send().await?;
+    //let body = resp.json::<Visits>().await?;
+
+    let body: ResponseInfo = resp.json::<ResponseInfo>().await.unwrap();
+    Ok(body.result)
+}
+
+fn create_feature_card<G: Html>(cx: Scope) -> View<G> {
+    let repos = fetch_repos().await.unwrap();
+    let mut all = Vec::with_capacity(repos.capacity());
+    for repo in repos {
         all.push(view! { cx,
             div(class = "card"){
-                div(class = "feature-title"){
-                    "title"
-                }
-                div(class = "feature-text"){
-                    "text "
-                }
+                div(class = "feature-title"){ "Status: " (repo.name) }
+                div(class = "feature-text"){ "Time " (repo.primary_language) }
             }
         });
     }

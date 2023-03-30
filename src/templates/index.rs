@@ -2,11 +2,15 @@ use perseus::prelude::*;
 use sycamore::prelude::*;
 use models::repository;
 use crate::models;
-use crate::models::repository::{PostRepository, Repository, ResponseInfo};
-use sycamore::suspense::Suspense;
-use reqwasm::http::Request;
+use crate::models::repository::{PostRepository, Repository, ResponseInfo, ResponseInfoRx};
+use reqwest;
+use crate::global_state::*;
+
+
 
 fn index_page<G: Html>(cx: Scope) -> View<G> {
+    let AppStateRx { repos } = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+    let ResponseInfoRx { status, time, result } = repos;
     view! { cx,
         div {
             header(style = "position: fixed; width: 100%;")
@@ -49,9 +53,11 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
                         "Tangram is a programmable build system and package manager in which all dependencies are specified explicitly and pinned with a lockfile. You get the exact same versions of every package on every machine, so your builds are simple, reproducible, cacheable, and distributable"
                     }
                     div(class = "hero-buttons"){
-                        button(class = "button-cst"){
-                            "Test Button"
-                        }
+
+                        button(class = "button-cst", on:click = |_| {
+                        #[cfg(client)]
+                        repos.login().await
+                    }) { "GET" }
                     }
                 }
                 div(class = "features"){
@@ -75,34 +81,20 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
     }
 }
 
-const API_BASE_URL: &str = "http://localhost:8081/key/repositories";
 
-async fn fetch_repos() -> Result<Vec<Repository>, reqwasm::Error> {
-    let resp = reqwasm::http::Request::get(API_BASE_URL)
-        .send()
-        .await
-        .unwrap();
-
-    //let resp = Request::get(API_BASE_URL).send().await?;
-    //let body = resp.json::<Visits>().await?;
-
-    let body: ResponseInfo = resp.json::<ResponseInfo>().await.unwrap();
-    Ok(body.result)
-}
-
-fn create_feature_card<G: Html>(cx: Scope) -> View<G> {
-    let repos = fetch_repos().await.unwrap();
-    let mut all = Vec::with_capacity(repos.capacity());
-    for repo in repos {
+async fn create_feature_card<G: Html>(cx: Scope<'_>) -> View<G> {
+    //let repos = fetch_repos().await;
+    let mut all = Vec::with_capacity(2);
+    /*for repo in repos {
         all.push(view! { cx,
             div(class = "card"){
                 div(class = "feature-title"){ "Status: " (repo.name) }
                 div(class = "feature-text"){ "Time " (repo.primary_language) }
             }
         });
-    }
+    }*/
     let markup = View:: new_fragment(all);
-    (markup)
+    markup
 }
 
 #[engine_only_fn]

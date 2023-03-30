@@ -5,7 +5,7 @@ use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, to_string, Value};
 use sycamore::prelude::*;
-use crate::models::repository::ResponseInfo;
+use crate::models::repository::{Repository, ResponseInfo};
 
 #[derive(Serialize, Deserialize, Clone, ReactiveState)]
 #[rx(alias = "IndexPageStateRx")]
@@ -19,14 +19,87 @@ fn index_page<'a, G: Html>(
         response,
     }: &'a IndexPageStateRx,
 ) -> View<G> {
-
-
-
     view! { cx,
-        p { (format!("IP address of the server was: {}", response.get().time)) }
-        p { (format!("IP address of the server was: {}", response.get().status)) }
-        p { (format!("IP address of the server was: {}", response.get().result[0].clone().name)) }
+        div {
+            header(style = "position: fixed; width: 100%;")
+            {
+                div(style = "background-color: #222;", class = "navbar"){
+                    div(class = "container nav-container"){
+                        a(class = "topbar-link"){
+                            div(class = "topbar-brandwrapper"){
+                                img(class = "topbar-brandimage", src = ".perseus/static/tangram.svg"){
+                                    div(class = "topbar-brandtitle"){
+                                        "Title"
+                                    }
+                                }
+                            }
+                        }
+                        div(style = "right: 7vw; position: fixed; top: 25px;"){
+                            input(class="checkbox", type="checkbox", style="right:0;", name="", id=""){}
+                            div(class="hamburger-lines"){
+                                span (class="line line1"){}
+                                span (class="line line2"){}
+                                span (class="line line3"){}
+                            }
+                            div(class="menu-items"){
+                                li{a (href="#"){"Home"}}
+                                li{a (href="#"){"Home2"}}
+                                li{a (href="#"){"Home3"}}
+                                li{a (href="#"){"Home4"}}
+                                li{a (href="#"){"Home5"}}
+                            }
+                        }
+                    }
+                }
+            }
+            main(style = "padding-top: 16vh;"){
+                div(class = "her-wrapper"){
+                    div(class = "hero-title"){
+                        "Hello"
+                    }
+                    div(class = "hero-subtitle"){
+                        "Tangram is a programmable build system and package manager in which all dependencies are specified explicitly and pinned with a lockfile. You get the exact same versions of every package on every machine, so your builds are simple, reproducible, cacheable, and distributable"
+                    }
+                    div(class = "hero-buttons"){
+
+
+                    }
+                }
+                div(class = "features"){
+                    (create_feature_card(cx, response.get().result.clone()))
+                }
+            }
+            footer{
+                div(style = "background: #222;"){
+                    div(class = "footer-inner"){
+                        div(class = "topbar-brandwrapper"){
+                            img(class = "topbar-brandimage", src = ".perseus/static/tangram.svg"){
+                                div(class = "topbar-brandtitle"){
+                                    "Title"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+}
+
+
+fn create_feature_card<G: Html>(cx: Scope<'_>, repos: Vec<Repository>) -> View<G> {
+    //let repos = fetch_repos().await;
+    let mut all = Vec::with_capacity(repos.capacity());
+    for repo in repos.clone() {
+        all.push(view! { cx,
+            div(class = "card"){
+                div(class = "feature-title"){ "Status: " (repo.name.clone()) }
+                div(class = "feature-text"){ "Time " (repo.primary_language.clone()) }
+            }
+        });
+    }
+    let markup = View:: new_fragment(all);
+    markup
 }
 
 pub fn get_template<G: Html>() -> Template<G> {
@@ -34,10 +107,6 @@ pub fn get_template<G: Html>() -> Template<G> {
         .build_state_fn(get_build_state)
         .view_with_state(index_page)
         .build()
-}
-
-fn unescape(s: &str) -> serde_json::Result<String> {
-    serde_json::from_str(&format!("\"{}\"", s))
 }
 
 #[engine_only_fn]
@@ -48,8 +117,6 @@ async fn get_build_state(
     let body = perseus::utils::cache_fallible_res(
         "ipify",
         || async {
-            // This just gets the IP address of the machine that built the app
-            //let res = reqwest::get("http://localhost:8088/repositories").await.unwrap().json().await?;
             let client = reqwest::Client::new();
             let res = client
                 .get("http://localhost:8088/repositories")
@@ -58,6 +125,7 @@ async fn get_build_state(
                 .send()
                 .await
                 .expect("error");
+
             let val = match res.json().await {
                 Ok(json) => {
                     let body: Value = json;
@@ -66,14 +134,11 @@ async fn get_build_state(
                 Err(e) => panic!("error")
             };
             let mut test: Vec<ResponseInfo> = serde_json::from_value(val).unwrap();
-
-            //println!("{:?}", response);
             Ok::<ResponseInfo, reqwest::Error>(test[0].clone())
         },
         true,
     )
         .await?;
-    // Note that `?` is able to convert from `reqwest::Error` -> `BlamedError<reqwest::Error>`
 
 
     Ok(IndexPageState {

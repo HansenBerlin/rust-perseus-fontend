@@ -4,19 +4,18 @@ mod models;
 use perseus::prelude::*;
 use sycamore::prelude::view;
 
+/*
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
     PerseusApp::new()
         .template(crate::templates::index_two::get_template())
         .error_views(ErrorViews::unlocalized_development_default())
 }
-
-/*
+*/
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
     PerseusApp::new()
-        .global_state_creator(crate::global_state::get_global_state_creator())
-        .template(crate::templates::index::get_template())
+        .template(crate::templates::index_two::get_template())
         .index_view(|cx| {
             view! { cx,
                 html {
@@ -31,4 +30,4 @@ pub fn main<G: Html>() -> PerseusApp<G> {
                 }
             }
         })
-}*/
+}

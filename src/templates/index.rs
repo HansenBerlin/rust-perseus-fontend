@@ -77,19 +77,42 @@ fn index_page<G: Html>(cx: Scope) -> View<G> {
 }
 
 
-async fn create_feature_card<G: Html>(cx: Scope<'_>) -> View<G> {
-    //let repos = fetch_repos().await;
-    let mut all = Vec::with_capacity(2);
-    /*for repo in repos {
-        all.push(view! { cx,
-            div(class = "card"){
-                div(class = "feature-title"){ "Status: " (repo.name) }
-                div(class = "feature-text"){ "Time " (repo.primary_language) }
-            }
-        });
-    }*/
-    let markup = View:: new_fragment(all);
-    markup
+
+#[engine_only_fn]
+async fn get_build_state(
+    _info: StateGeneratorInfo<()>,
+) -> Result<IndexPageState, BlamedError<reqwest::Error>> {
+
+    let body = perseus::utils::cache_fallible_res(
+        "ipify",
+        || async {
+            let client = reqwest::Client::new();
+            let res = client
+                .get("http://localhost:8088/repositories")
+                .header(CONTENT_TYPE, "application/json")
+                .header(ACCEPT, "application/json")
+                .send()
+                .await
+                .expect("error");
+
+            let val = match res.json().await {
+                Ok(json) => {
+                    let body: Value = json;
+                    body
+                },
+                Err(e) => panic!("error")
+            };
+            let mut test: Vec<ResponseInfo> = serde_json::from_value(val).unwrap();
+            Ok::<ResponseInfo, reqwest::Error>(test[0].clone())
+        },
+        true,
+    )
+        .await?;
+
+
+    Ok(IndexPageState {
+        response: body,
+    })
 }
 
 #[engine_only_fn]

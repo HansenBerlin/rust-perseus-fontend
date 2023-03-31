@@ -55,10 +55,12 @@ fn index_page<'a, G: Html>(
             main(style = "padding-top: 16vh;"){
                 div(class = "her-wrapper"){
                     div(class = "hero-title"){
-                        "Hello"
+                        "Git"
                     }
                     div(class = "hero-subtitle"){
-                        "Tangram is a programmable build system and package manager in which all dependencies are specified explicitly and pinned with a lockfile. You get the exact same versions of every package on every machine, so your builds are simple, reproducible, cacheable, and distributable"
+                        "Git is a distributed version control system that tracks changes in any set of computer files, usually used for coordinating work among programmers collaboratively developing source code during software development. Its goals include speed, data integrity, and support for distributed, non-linear workflows (thousands of parallel branches running on different systems).
+
+Git was originally authored by Linus Torvalds in 2005 for development of the Linux kernel, with other kernel developers contributing to its initial development. Since 2005, Junio Hamano has been the core maintainer. As with most other distributed version control systems, and unlike most client–server systems, every Git directory on every computer is a full-fledged repository with complete history and full version-tracking abilities, independent of network access or a central server. Git is free and open-source software distributed under the GPL-2.0-only license."
                     }
                     div(class = "hero-buttons"){
 
@@ -88,13 +90,25 @@ fn index_page<'a, G: Html>(
 
 
 fn create_feature_card<G: Html>(cx: Scope<'_>, repos: Vec<Repository>) -> View<G> {
-    //let repos = fetch_repos().await;
     let mut all = Vec::with_capacity(repos.capacity());
     for repo in repos.clone() {
         all.push(view! { cx,
             div(class = "card"){
-                div(class = "feature-title"){ "Status: " (repo.name.clone()) }
-                div(class = "feature-text"){ "Time " (repo.primary_language.clone()) }
+                div(class = "feature-title"){ "Name: " (repo.name.clone()) ", erstellt am " (repo.created_at.clone()) }
+                div(style= "display:flex;"){
+                    div(class = "feature-text"){
+                        p {"commits " (repo.commit_count.clone()) }
+                        p {"forks " (repo.forks_count.clone()) }
+                    }
+                    div(class = "feature-text"){
+                        p {"stars " (repo.stars_count.clone()) }
+                        p {"pull requests " (repo.pull_requests.clone()) }
+                    }
+                    div(class = "feature-text"){
+                        p {"watchers " (repo.watchers.clone()) }
+                        p {"language " (repo.primary_language.clone()) }
+                    }
+                }
             }
         });
     }

@@ -142,7 +142,7 @@ async fn get_build_state(
         || async {
             let client = reqwest::Client::new();
             let res = client
-                .get("http://localhost:8088/repositories")
+                .get("http://139.144.71.117:8088/repositories")
                 .header(CONTENT_TYPE, "application/json")
                 .header(ACCEPT, "application/json")
                 .send()

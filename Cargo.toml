@@ -4,16 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-perseus = { version = "=0.4.0-beta.17", features = [ "hydrate" ] }
+perseus = { version = "0.4.0-rc.1", features = [ "hydrate" ] }
 sycamore = { version = "^0.8.1", features = ["suspense"] }
 serde = "1.0.147"
 serde_json = "*"
 reqwest = {features = ["json"]}
 # futures = "0.3"
+chrono = "*"
+
 
 [target.'cfg(engine)'.dependencies]
 tokio = { version = "1", features = [ "macros", "rt", "rt-multi-thread" ] }
-perseus-axum = { version = "=0.4.0-beta.17", features = [ "dflt-server" ] }
+perseus-axum = { version = "0.4.0-rc.1", features = [ "dflt-server" ] }
+
 
 [target.'cfg(client)'.dependencies]
 web-sys = { version = "0.3", features = [ "Storage" ] }

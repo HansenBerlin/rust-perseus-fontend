@@ -1,4 +1,3 @@
-pub mod repository {
     use perseus::ReactiveState;
     use serde::{Serialize, Deserialize};
 
@@ -23,14 +22,11 @@ pub mod repository {
         pub licence: String,
     }
 
-
-
-
-    #[rx(alias = "ResponseInfoRx")]
     #[derive(Serialize, Deserialize, ReactiveState, Clone)]
+    #[rx(alias = "ResponseInfoRx")]
     pub struct ResponseInfo {
         pub result: Vec<Repository>,
         pub status: String,
         pub time: String,
     }
-}
+

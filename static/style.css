@@ -181,6 +181,7 @@ main{
     line-height: 1.5;
     color: #aaa;
     font-size: 1rem;
+    width: 100%;
 }
 
 .card {

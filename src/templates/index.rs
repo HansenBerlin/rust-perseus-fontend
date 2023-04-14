@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::env;
 use perseus::prelude::*;
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use reqwest::Response;
@@ -164,25 +165,43 @@ async fn get_build_state(
     _info: StateGeneratorInfo<()>,
 ) -> IndexPageState {
 
+    let base_url = env::var("REST_URL").expect("No url env. variable found");
+    let port = env::var("REST_PORT").expect("No port env. variable found");
+    let url = format!("http://{}:{}/repositories", base_url, port);
+    println!("{}", url);
     let client = reqwest::Client::new();
-    let res = client
-        .get("http://localhost:8088/repositories")
+    let res =match client
+        .get(url)
         .header(CONTENT_TYPE, "application/json")
         .header(ACCEPT, "application/json")
         .query(&[("timestamp", chrono::Utc::now().timestamp())])
         .send()
-        .await
-        .expect("error");
+        .await {
+        Ok(resp) => resp,
+        Err(e) => {
+            return IndexPageState {
+                response: ResponseInfo {
+                    result: vec![],
+                    status: reqwest::StatusCode::INTERNAL_SERVER_ERROR.to_string(),
+                    time: "".to_string(),
+                }
+            };
+        }
+    };
 
     let val = match res.json().await {
         Ok(json) => {
             let body: Value = json;
             body
         },
-        Err(e) => panic!("error")
+        Err(e) => { Value::String(String::from("")) }
     };
-    let mut test: Vec<ResponseInfo> = serde_json::from_value(val).unwrap();
-    let body = Ok::<ResponseInfo, reqwest::Error>(test[0].clone()).unwrap();
+    let mut test: Vec<ResponseInfo> = serde_json::from_value(val).unwrap_or(vec![]);
+    let body = Ok::<ResponseInfo, reqwest::Error>(test[0].clone()).unwrap_or(ResponseInfo {
+        result: vec![],
+        status: "".to_string(),
+        time: "".to_string(),
+    });
 
     IndexPageState {
         response: body,

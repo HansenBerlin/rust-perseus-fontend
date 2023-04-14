@@ -2,11 +2,15 @@ mod templates;
 mod models;
 //mod models;
 
+use std::env;
 use perseus::prelude::*;
 use sycamore::prelude::view;
+use dotenv::*;
 
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
+    dotenv().ok();
+
     PerseusApp::new()
         .template(crate::templates::index::get_template())
         .error_views(ErrorViews::unlocalized_development_default())
